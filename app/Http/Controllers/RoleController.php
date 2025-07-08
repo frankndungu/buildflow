@@ -24,9 +24,9 @@ class RoleController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): \Inertia\Response
     {
-        //
+        return \Inertia\Inertia::render('role/create');
     }
 
     /**
@@ -34,9 +34,15 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+        'name' => 'required|string|unique:roles,name',
+        'label' => 'required|string',
+        ]);
 
+        Role::create($validated);
+
+        return redirect()->route('roles.index')->with('success', 'Role created successfully.');
+    }
     /**
      * Display the specified resource.
      */
