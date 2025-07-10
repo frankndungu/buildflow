@@ -1,7 +1,14 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
+
+type ProjectStats = {
+    total: number;
+    active: number;
+    completed: number;
+    on_hold: number;
+    total_budget: number;
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -11,25 +18,34 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+    const { projectStats } = usePage().props as any as { projectStats: ProjectStats };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
+            <div className="flex flex-col gap-6 p-6">
+                <h1 className="text-2xl font-bold">Project KPIs</h1>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <KpiCard label="Total Projects" value={projectStats.total} />
+                    <KpiCard label="Active" value={projectStats.active} />
+                    <KpiCard label="Completed" value={projectStats.completed} />
+                    <KpiCard label="On Hold" value={projectStats.on_hold} />
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                <div className="mt-6">
+                    <KpiCard label="Total Budget (USD)" value={Number(projectStats.total_budget).toLocaleString()} full />
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+function KpiCard({ label, value, full = false }: { label: string; value: string | number; full?: boolean }) {
+    return (
+        <div className={`rounded-xl border bg-white p-4 shadow dark:bg-gray-900 ${full ? 'md:col-span-2 lg:col-span-4' : ''}`}>
+            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className="text-2xl font-bold">{value}</div>
+        </div>
     );
 }

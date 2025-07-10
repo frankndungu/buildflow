@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 
 type Project = {
     id: number;
@@ -38,19 +38,34 @@ export default function ProjectIndex() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                     {projects.map((project) => (
-                        <div key={project.id} className="rounded-xl border bg-white p-4 shadow dark:bg-gray-900">
-                            <div className="mb-1 text-lg font-semibold">{project.name}</div>
-                            <div className="mb-2 text-sm text-muted-foreground">Budget: KES {Number(project.budget).toLocaleString()}</div>
-                            <div className="mb-2 text-xs">
-                                Status: <span className="font-medium">{project.status}</span>
+                        <div key={project.id} className="flex flex-col justify-between rounded-xl border bg-white p-4 shadow dark:bg-gray-900">
+                            <div className="space-y-2">
+                                <div className="text-lg font-semibold">{project.name}</div>
+                                <div className="text-sm text-muted-foreground">Budget: KES {Number(project.budget).toLocaleString()}</div>
+                                <div className="text-xs">
+                                    Status: <span className="font-medium">{project.status}</span>
+                                </div>
+                                {project.creator && <div className="text-xs text-gray-500">Created by: {project.creator.name}</div>}
                             </div>
-                            {project.creator && <div className="text-xs text-gray-500">Created by: {project.creator.name}</div>}
-                            <a href={`/projects/${project.id}/edit`} className="mt-3 inline-block text-sm text-blue-600 hover:underline">
-                                Edit
-                            </a>
-                            <a href={`/projects/${project.id}`} className="mr-4 text-sm text-gray-700 hover:underline">
-                                View
-                            </a>
+
+                            <div className="mt-4 flex flex-wrap items-center gap-4">
+                                <a href={`/projects/${project.id}`} className="text-sm text-gray-700 hover:underline">
+                                    View
+                                </a>
+                                <a href={`/projects/${project.id}/edit`} className="text-sm text-blue-600 hover:underline">
+                                    Edit
+                                </a>
+                                <button
+                                    onClick={() => {
+                                        if (confirm('Are you sure you want to delete this project?')) {
+                                            router.delete(`/projects/${project.id}`);
+                                        }
+                                    }}
+                                    className="text-sm text-red-600 hover:underline"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
