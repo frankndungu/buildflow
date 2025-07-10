@@ -48,6 +48,9 @@ export default function ProjectIndex() {
                             <a href={`/projects/${project.id}/edit`} className="mt-3 inline-block text-sm text-blue-600 hover:underline">
                                 Edit
                             </a>
+                            <a href={`/projects/${project.id}`} className="mr-4 text-sm text-gray-700 hover:underline">
+                                View
+                            </a>
                         </div>
                     ))}
                 </div>
