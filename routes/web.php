@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
-
+use App\Http\Controllers\ProjectController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
     Route::resource('roles', RoleController::class);
+    Route::resource('projects', ProjectController::class);
 });
 
 require __DIR__.'/settings.php';
