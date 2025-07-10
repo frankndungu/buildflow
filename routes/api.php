@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\AuthApiController;
 use App\Http\Controllers\API\RoleApiController;
+use App\Http\Controllers\API\ProjectApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -24,5 +25,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/roles/{role}', [RoleApiController::class, 'show']);
         Route::put('/roles/{role}', [RoleApiController::class, 'update']);
         Route::delete('/roles/{role}', [RoleApiController::class, 'destroy']);
+
+        // Project Routes
+        Route::get('/projects', [ProjectApiController::class, 'index']);
+        Route::post('/projects', [ProjectApiController::class, 'store']);
+        Route::get('/projects/{project}', [ProjectApiController::class, 'show']);
+        Route::put('/projects/{project}', [ProjectApiController::class, 'update']);
+        Route::delete('/projects/{project}', [ProjectApiController::class, 'destroy']);
     });
 });
