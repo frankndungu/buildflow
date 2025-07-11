@@ -34,7 +34,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="mt-6">
-                    <KpiCard label="Total Budget (USD)" value={Number(projectStats.total_budget).toLocaleString()} full />
+                    <KpiCard label="Total Budget (KES)" value={Number(projectStats.total_budget).toLocaleString()} full />
                 </div>
             </div>
         </AppLayout>

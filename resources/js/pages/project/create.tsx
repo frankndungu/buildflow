@@ -1,7 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { FormEvent, useState } from 'react';
+
+type User = {
+    id: number;
+    name: string;
+    email: string;
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -10,6 +16,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CreateProject() {
+    const { users } = usePage().props as any as { users: User[] };
+
     const [form, setForm] = useState({
         name: '',
         description: '',
@@ -17,6 +25,7 @@ export default function CreateProject() {
         end_date: '',
         budget: '',
         status: 'active',
+        assigned_users: [] as { id: number; role: string }[],
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -24,6 +33,24 @@ export default function CreateProject() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleUserAssign = (userId: number, role: string) => {
+        setForm((prev) => {
+            const existing = prev.assigned_users.find((u) => u.id === userId);
+            const assigned_users = existing
+                ? prev.assigned_users.map((u) => (u.id === userId ? { ...u, role } : u))
+                : [...prev.assigned_users, { id: userId, role }];
+
+            return { ...prev, assigned_users };
+        });
+    };
+
+    const handleUserRemove = (userId: number) => {
+        setForm((prev) => ({
+            ...prev,
+            assigned_users: prev.assigned_users.filter((u) => u.id !== userId),
+        }));
     };
 
     const handleSubmit = (e: FormEvent) => {
@@ -40,6 +67,7 @@ export default function CreateProject() {
                     end_date: '',
                     budget: '',
                     status: 'active',
+                    assigned_users: [],
                 });
             },
         });
@@ -53,6 +81,7 @@ export default function CreateProject() {
                 <h1 className="mb-6 text-2xl font-bold">Create New Project</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Basic Info */}
                     <div>
                         <label className="block text-sm font-medium">Project Name</label>
                         <input
@@ -78,6 +107,7 @@ export default function CreateProject() {
                         {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </div>
 
+                    {/* Dates and Budget */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium">Start Date</label>
@@ -117,6 +147,7 @@ export default function CreateProject() {
                         {errors.budget && <p className="mt-1 text-sm text-red-600">{errors.budget}</p>}
                     </div>
 
+                    {/* Status */}
                     <div>
                         <label className="block text-sm font-medium">Status</label>
                         <select
@@ -132,6 +163,47 @@ export default function CreateProject() {
                         {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
                     </div>
 
+                    {/* Assign Users */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium">Assign Team Members</label>
+                        <div className="space-y-3">
+                            {users.map((user) => {
+                                const assigned = form.assigned_users.find((u) => u.id === user.id);
+                                return (
+                                    <div key={user.id} className="flex items-center gap-3">
+                                        <label className="flex-1 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!assigned}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        handleUserAssign(user.id, 'member');
+                                                    } else {
+                                                        handleUserRemove(user.id);
+                                                    }
+                                                }}
+                                            />
+                                            <span className="ml-2">
+                                                {user.name} ({user.email})
+                                            </span>
+                                        </label>
+                                        {assigned && (
+                                            <select
+                                                value={assigned.role}
+                                                onChange={(e) => handleUserAssign(user.id, e.target.value)}
+                                                className="rounded-md border px-2 py-1 text-sm dark:bg-gray-800 dark:text-white"
+                                            >
+                                                <option value="member">Member</option>
+                                                <option value="manager">Manager</option>
+                                            </select>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Submit */}
                     <div className="flex justify-end">
                         <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
                             Save Project

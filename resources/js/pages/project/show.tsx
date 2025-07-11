@@ -14,6 +14,14 @@ type Project = {
         id: number;
         name: string;
     };
+    users?: {
+        id: number;
+        name: string;
+        email: string;
+        pivot: {
+            role: string;
+        };
+    }[];
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -59,6 +67,22 @@ export default function ShowProject() {
                         </div>
                     )}
                 </div>
+
+                {project.users && project.users.length > 0 && (
+                    <div className="mt-8 space-y-2">
+                        <h2 className="text-lg font-semibold">Assigned Team</h2>
+                        <ul className="space-y-1 text-sm">
+                            {project.users.map((user) => (
+                                <li key={user.id} className="flex justify-between border-b py-2">
+                                    <div>
+                                        <span className="font-medium">{user.name}</span> ({user.email})
+                                    </div>
+                                    <div className="text-gray-500 capitalize">{user.pivot.role}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,9 +20,11 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(): \Inertia\Response
     {
-        return Inertia::render('project/create');
+        return Inertia::render('project/create', [
+            'users' => User::select('id', 'name', 'email')->get(),
+        ]);
     }
 
     public function store(Request $request)
@@ -33,12 +36,23 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'budget' => 'required|numeric|min:0',
             'status' => 'required|in:active,completed,on_hold',
+            'assigned_users' => 'nullable|array',
+            'assigned_users.*.id' => 'required|exists:users,id',
+            'assigned_users.*.role' => 'required|string',
         ]);
 
-        Project::create([
+        $project = Project::create([
             ...$validated,
             'created_by' => Auth::id(),
         ]);
+
+        if (!empty($validated['assigned_users'])) {
+            $project->users()->sync(
+                collect($validated['assigned_users'])->mapWithKeys(fn($u) => [
+                    $u['id'] => ['role' => $u['role']],
+                ])->toArray()
+            );
+        }
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
@@ -46,14 +60,18 @@ class ProjectController extends Controller
     public function show(Project $project): Response
     {
         return Inertia::render('project/show', [
-            'project' => $project->load('creator'),
+            'project' => $project->load('creator', 'users'),
         ]);
     }
 
-    public function edit(Project $project): Response
+    public function edit(Project $project): \Inertia\Response
     {
+        $assigned = $project->users()->select('users.id', 'users.name', 'users.email', 'project_user.role')->get();
+
         return Inertia::render('project/edit', [
             'project' => $project,
+            'users' => User::select('id', 'name', 'email')->get(),
+            'assignedUsers' => $assigned,
         ]);
     }
 
@@ -66,9 +84,18 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'budget' => 'required|numeric|min:0',
             'status' => 'required|in:active,completed,on_hold',
+            'assigned_users' => 'nullable|array',
+            'assigned_users.*.id' => 'required|exists:users,id',
+            'assigned_users.*.role' => 'required|string',
         ]);
 
         $project->update($validated);
+
+        $project->users()->sync(
+            collect($validated['assigned_users'] ?? [])->mapWithKeys(fn($u) => [
+                $u['id'] => ['role' => $u['role']],
+            ])->toArray()
+        );
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
