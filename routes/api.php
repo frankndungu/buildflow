@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\API\AuthApiController;
 use App\Http\Controllers\API\RoleApiController;
 use App\Http\Controllers\API\ProjectApiController;
+use App\Http\Controllers\API\DocumentApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,5 +33,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/projects/{project}', [ProjectApiController::class, 'show']);
         Route::put('/projects/{project}', [ProjectApiController::class, 'update']);
         Route::delete('/projects/{project}', [ProjectApiController::class, 'destroy']);
+
+        // Document Routes
+        Route::post('/projects/{project}/documents', [DocumentApiController::class, 'store']);
     });
 });

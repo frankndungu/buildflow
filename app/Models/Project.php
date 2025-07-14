@@ -29,4 +29,9 @@ class Project extends Model
         return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
     }
 
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
+
 }

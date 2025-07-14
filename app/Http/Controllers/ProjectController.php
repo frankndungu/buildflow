@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -60,7 +61,7 @@ class ProjectController extends Controller
     public function show(Project $project): Response
     {
         return Inertia::render('project/show', [
-            'project' => $project->load('creator', 'users'),
+            'project' => $project->load('creator', 'users', 'documents.uploader'),
         ]);
     }
 
