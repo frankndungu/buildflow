@@ -33,6 +33,17 @@ type Project = {
             name: string;
         };
     }[];
+    expenses?: {
+        id: number;
+        description: string;
+        amount: number;
+        category: string;
+        spent_at: string;
+        receipt_path: string;
+        uploader?: {
+            name: string;
+        };
+    }[];
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -51,9 +62,16 @@ export default function ShowProject() {
         file: null as File | null,
     });
 
+    const expenseForm = useForm({
+        description: '',
+        amount: '',
+        category: 'material',
+        spent_at: '',
+        receipt: null as File | null,
+    });
+
     const handleDocSubmit = (e: FormEvent) => {
         e.preventDefault();
-
         const data = new FormData();
         data.append('name', docForm.data.name);
         data.append('category', docForm.data.category);
@@ -65,6 +83,24 @@ export default function ShowProject() {
             onSuccess: () => docForm.reset(),
         });
     };
+
+    const handleExpenseSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        const data = new FormData();
+        data.append('description', expenseForm.data.description);
+        data.append('amount', expenseForm.data.amount);
+        data.append('category', expenseForm.data.category);
+        data.append('spent_at', expenseForm.data.spent_at);
+        if (expenseForm.data.receipt) data.append('receipt', expenseForm.data.receipt);
+
+        expenseForm.post(`/projects/${project.id}/expenses`, {
+            preserveScroll: true,
+            onSuccess: () => expenseForm.reset(),
+        });
+    };
+
+    const totalSpent = project.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const budgetRemaining = project.budget - totalSpent;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -95,6 +131,12 @@ export default function ShowProject() {
                     <div>
                         <span className="font-semibold">Status:</span> {project.status}
                     </div>
+                    <div>
+                        <span className="font-semibold">Budget Used:</span> KES {Number(totalSpent).toLocaleString()}
+                    </div>
+                    <div>
+                        <span className="font-semibold">Remaining:</span> KES {Number(budgetRemaining).toLocaleString()}
+                    </div>
                     {project.creator && (
                         <div>
                             <span className="font-semibold">Created By:</span> {project.creator.name}
@@ -119,7 +161,7 @@ export default function ShowProject() {
                     </div>
                 )}
 
-                {/* Document List */}
+                {/* Documents */}
                 {project.documents && project.documents.length > 0 && (
                     <div className="mt-10 space-y-2">
                         <h2 className="text-lg font-semibold">Project Documents</h2>
@@ -148,20 +190,18 @@ export default function ShowProject() {
                     </div>
                 )}
 
-                {/* Upload Form */}
+                {/* Upload Document */}
                 <div className="mt-10 rounded border p-4">
                     <h3 className="mb-3 text-sm font-semibold">Upload New Document</h3>
                     <form onSubmit={handleDocSubmit} className="space-y-3">
                         <input
                             type="text"
-                            name="name"
                             placeholder="Document Name"
                             value={docForm.data.name}
                             onChange={(e) => docForm.setData('name', e.target.value)}
                             className="w-full rounded border px-3 py-2 text-sm"
                         />
                         <select
-                            name="category"
                             value={docForm.data.category}
                             onChange={(e) => docForm.setData('category', e.target.value)}
                             className="w-full rounded border px-3 py-2 text-sm"
@@ -174,7 +214,6 @@ export default function ShowProject() {
                         </select>
                         <input
                             type="text"
-                            name="version"
                             placeholder="Version (optional)"
                             value={docForm.data.version}
                             onChange={(e) => docForm.setData('version', e.target.value)}
@@ -182,7 +221,6 @@ export default function ShowProject() {
                         />
                         <input
                             type="file"
-                            name="file"
                             accept="application/pdf,image/*"
                             onChange={(e) => docForm.setData('file', e.target.files?.[0] || null)}
                             className="w-full rounded border text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white"
@@ -193,6 +231,82 @@ export default function ShowProject() {
                             className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
                         >
                             {docForm.processing ? 'Uploading…' : 'Upload Document'}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Expenses */}
+                <div className="mt-12 space-y-4">
+                    <h2 className="text-lg font-semibold">Expenses</h2>
+                    <ul className="space-y-3 text-sm">
+                        {project.expenses?.map((exp) => (
+                            <li key={exp.id} className="rounded border p-3">
+                                <div className="flex justify-between font-medium">
+                                    <span>{exp.description}</span>
+                                    <span>KES {Number(exp.amount).toLocaleString()}</span>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                    Category: {exp.category} | Spent: {exp.spent_at} | Uploaded by: {exp.uploader?.name}
+                                </div>
+                                <a
+                                    href={`/storage/${exp.receipt_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 hover:underline"
+                                >
+                                    View Receipt
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* Add Expense Form */}
+                <div className="mt-10 rounded border p-4">
+                    <h3 className="mb-3 text-sm font-semibold">Log New Expense</h3>
+                    <form onSubmit={handleExpenseSubmit} className="space-y-3">
+                        <input
+                            type="text"
+                            placeholder="Description"
+                            value={expenseForm.data.description}
+                            onChange={(e) => expenseForm.setData('description', e.target.value)}
+                            className="w-full rounded border px-3 py-2 text-sm"
+                        />
+                        <input
+                            type="number"
+                            placeholder="Amount (KES)"
+                            value={expenseForm.data.amount}
+                            onChange={(e) => expenseForm.setData('amount', e.target.value)}
+                            className="w-full rounded border px-3 py-2 text-sm"
+                        />
+                        <select
+                            value={expenseForm.data.category}
+                            onChange={(e) => expenseForm.setData('category', e.target.value)}
+                            className="w-full rounded border px-3 py-2 text-sm"
+                        >
+                            <option value="material">Material</option>
+                            <option value="labor">Labor</option>
+                            <option value="logistics">Logistics</option>
+                            <option value="misc">Misc</option>
+                        </select>
+                        <input
+                            type="date"
+                            value={expenseForm.data.spent_at}
+                            onChange={(e) => expenseForm.setData('spent_at', e.target.value)}
+                            className="w-full rounded border px-3 py-2 text-sm"
+                        />
+                        <input
+                            type="file"
+                            accept="image/*,application/pdf"
+                            onChange={(e) => expenseForm.setData('receipt', e.target.files?.[0] || null)}
+                            className="w-full rounded border text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white"
+                        />
+                        <button
+                            type="submit"
+                            disabled={expenseForm.processing}
+                            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                            {expenseForm.processing ? 'Submitting…' : 'Add Expense'}
                         </button>
                     </form>
                 </div>

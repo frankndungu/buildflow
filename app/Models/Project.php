@@ -34,4 +34,9 @@ class Project extends Model
         return $this->hasMany(Document::class);
     }
 
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
 }

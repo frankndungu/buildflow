@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Document;
+use App\Models\Expense;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
@@ -61,7 +64,7 @@ class ProjectController extends Controller
     public function show(Project $project): Response
     {
         return Inertia::render('project/show', [
-            'project' => $project->load('creator', 'users', 'documents.uploader'),
+            'project' => $project->load('creator', 'users', 'documents.uploader', 'expenses.uploader'),
         ]);
     }
 
@@ -99,6 +102,30 @@ class ProjectController extends Controller
         );
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
+    }
+
+    public function storeExpense(Request $request, Project $project): RedirectResponse
+    {
+        $validated = $request->validate([
+            'description' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'category' => 'required|string|max:100',
+            'spent_at' => 'nullable|date',
+            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ]);
+
+        $path = $request->file('receipt')->store("receipts/project-{$project->id}", 'public');
+
+        $project->expenses()->create([
+            'description' => $validated['description'],
+            'amount' => $validated['amount'],
+            'category' => $validated['category'],
+            'spent_at' => $validated['spent_at'],
+            'receipt_path' => $path,
+            'uploaded_by' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Expense logged successfully.');
     }
 
     public function destroy(Project $project)

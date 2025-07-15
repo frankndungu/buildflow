@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AuthApiController;
 use App\Http\Controllers\API\RoleApiController;
 use App\Http\Controllers\API\ProjectApiController;
 use App\Http\Controllers\API\DocumentApiController;
+use App\Http\Controllers\API\ExpenseApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -36,5 +37,8 @@ Route::prefix('v1')->group(function () {
 
         // Document Routes
         Route::post('/projects/{project}/documents', [DocumentApiController::class, 'store']);
+
+        // Expense Routes
+        Route::post('/projects/{project}/expenses', [ExpenseApiController::class, 'store']);
     });
 });

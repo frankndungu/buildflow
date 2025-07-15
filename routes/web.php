@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/projects/{project}/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/projects/{project}/documents/create', [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/projects/{project}/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::post('/projects/{project}/expenses', [ProjectController::class, 'storeExpense'])->name('projects.expenses.store');
 
     Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
     Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
