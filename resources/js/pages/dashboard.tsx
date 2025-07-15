@@ -1,3 +1,5 @@
+import BudgetChart from '@/components/charts/budget-chart';
+import CategoryChart from '@/components/charts/category-chart';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -8,6 +10,11 @@ type ProjectStats = {
     completed: number;
     on_hold: number;
     total_budget: number;
+    budget_used: number;
+    expenses: {
+        category: string;
+        amount: number;
+    }[];
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,6 +33,7 @@ export default function Dashboard() {
             <div className="flex flex-col gap-6 p-6">
                 <h1 className="text-2xl font-bold">Project KPIs</h1>
 
+                {/* KPI Grid */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <KpiCard label="Total Projects" value={projectStats.total} />
                     <KpiCard label="Active" value={projectStats.active} />
@@ -35,6 +43,18 @@ export default function Dashboard() {
 
                 <div className="mt-6">
                     <KpiCard label="Total Budget (KES)" value={Number(projectStats.total_budget).toLocaleString()} full />
+                </div>
+
+                {/* Charts */}
+                <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <h3 className="mb-2 text-sm font-semibold">Overall Budget Usage</h3>
+                        <BudgetChart used={projectStats.budget_used} total={projectStats.total_budget} />
+                    </div>
+                    <div>
+                        <h3 className="mb-2 text-sm font-semibold">Expense Category Breakdown</h3>
+                        <CategoryChart expenses={projectStats.expenses} />
+                    </div>
                 </div>
             </div>
         </AppLayout>

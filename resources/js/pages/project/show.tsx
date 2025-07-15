@@ -1,3 +1,5 @@
+import BudgetChart from '@/components/charts/budget-chart';
+import CategoryChart from '@/components/charts/category-chart';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -189,6 +191,17 @@ export default function ShowProject() {
                         </ul>
                     </div>
                 )}
+                {/* Charts Section */}
+                <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <h3 className="mb-2 text-sm font-semibold">Budget Usage</h3>
+                        <BudgetChart used={totalSpent} total={project.budget} />
+                    </div>
+                    <div>
+                        <h3 className="mb-2 text-sm font-semibold">Expense Categories</h3>
+                        <CategoryChart expenses={project.expenses || []} />
+                    </div>
+                </div>
 
                 {/* Upload Document */}
                 <div className="mt-10 rounded border p-4">
