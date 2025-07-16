@@ -7,6 +7,7 @@ use App\Http\Controllers\API\RoleApiController;
 use App\Http\Controllers\API\ProjectApiController;
 use App\Http\Controllers\API\DocumentApiController;
 use App\Http\Controllers\API\ExpenseApiController;
+use App\Http\Controllers\API\TaskApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -40,5 +41,12 @@ Route::prefix('v1')->group(function () {
 
         // Expense Routes
         Route::post('/projects/{project}/expenses', [ExpenseApiController::class, 'store']);
+
+        // Task Routes
+        Route::get('/projects/{project}/tasks', [TaskApiController::class, 'index']);
+        Route::post('/projects/{project}/tasks', [TaskApiController::class, 'store']);
+        Route::get('/tasks/{task}', [TaskApiController::class, 'show']);
+        Route::put('/tasks/{task}', [TaskApiController::class, 'update']);
+        Route::delete('/tasks/{task}', [TaskApiController::class, 'destroy']);
     });
 });
