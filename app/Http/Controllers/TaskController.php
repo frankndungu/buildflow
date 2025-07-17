@@ -50,6 +50,7 @@ class TaskController extends Controller
         return Inertia::render('task/edit', [
             'project' => $project,
             'task' => $task,
+            'users' => \App\Models\User::all(),
         ]);
     }
 
@@ -65,7 +66,19 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('projects.tasks', $project->id)->with('success', 'Task updated.');
+        return redirect()->route('projects.tasks.index', $project->id)->with('success', 'Task updated.'); // Changed from 'projects.tasks' to 'projects.tasks.index'
+    }
+
+    // Add this method to TaskController.php
+    public function updateStatus(Request $request, Project $project, Task $task)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:todo,in_progress,done',
+        ]);
+
+        $task->update($validated);
+
+        return back();
     }
 
     public function destroy(Project $project, Task $task)
