@@ -55,5 +55,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Project::class)->withPivot('role')->withTimestamps();
     }
-
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
 }

@@ -2,64 +2,76 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Project $project)
     {
-        //
+        return Inertia::render('task/index', [
+            'project' => $project,
+            'tasks' => $project->tasks()->with('assignee')->get(),
+        ]);
+    }
+    
+    public function create(Project $project)
+    {
+        return Inertia::render('task/create', [
+            'project' => $project,
+            'users' => \App\Models\User::all(), 
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, Project $project)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
+            'status' => 'required|in:todo,in_progress,done',
+            'assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        $validated['project_id'] = $project->id;
+        $validated['created_by'] = auth()->id();
+        $validated['order'] = Task::where('project_id', $project->id)->max('order') + 1;
+
+        Task::create($validated);
+
+        return redirect()->route('projects.tasks.index', $project->id)->with('success', 'Task created.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function edit(Project $project, Task $task)
     {
-        //
+        return Inertia::render('task/edit', [
+            'project' => $project,
+            'task' => $task,
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Task $task)
+    public function update(Request $request, Project $project, Task $task)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
+            'status' => 'required|in:todo,in_progress,done',
+            'assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('projects.tasks', $project->id)->with('success', 'Task updated.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Task $task)
+    public function destroy(Project $project, Task $task)
     {
-        //
-    }
+        $task->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Task $task)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Task $task)
-    {
-        //
+        return back()->with('success', 'Task deleted.');
     }
 }

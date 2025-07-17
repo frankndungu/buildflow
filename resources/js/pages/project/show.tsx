@@ -162,6 +162,10 @@ export default function ShowProject() {
                         </ul>
                     </div>
                 )}
+                {/* Tasks Section */}
+                <a href={`/projects/${project.id}/tasks`} className="text-sm text-blue-600 hover:underline">
+                    View Tasks
+                </a>
 
                 {/* Documents */}
                 {project.documents && project.documents.length > 0 && (

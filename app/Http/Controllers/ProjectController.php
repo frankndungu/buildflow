@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Task;
 use App\Models\Document;
 use App\Models\Expense;
 use Illuminate\Http\Request;
@@ -127,6 +128,16 @@ class ProjectController extends Controller
 
         return redirect()->back()->with('success', 'Expense logged successfully.');
     }
+
+    public function tasks(Project $project): \Inertia\Response
+    {
+        $project->load('tasks');
+
+        return Inertia::render('project/tasks', [
+            'project' => $project,
+        ]);
+    }
+
 
     public function destroy(Project $project)
     {
