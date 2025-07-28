@@ -22,7 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('roles', RoleController::class);
     Route::resource('projects', ProjectController::class);
 
-    // Document routes
+    // Project Document routes
     Route::get('/projects/{project}/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/projects/{project}/documents/create', [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/projects/{project}/documents', [DocumentController::class, 'store'])->name('documents.store');
@@ -31,10 +31,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/documents/{document}', [DocumentController::class, 'update'])->name('documents.update');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
-    // Expense route
+    // Project Expense routes
     Route::post('/projects/{project}/expenses', [ProjectController::class, 'storeExpense'])->name('projects.expenses.store');
 
-    // Task routes 
+    // Project Task routes 
     Route::prefix('/projects/{project}/tasks')->name('projects.tasks.')->group(function () {
         Route::get('/', [TaskController::class, 'index'])->name('index');             
         Route::get('/create', [TaskController::class, 'create'])->name('create');      

@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CheckCheck, Construction, Folder, LayoutGrid, UserRoundCheckIcon } from 'lucide-react';
+import { BarChart4Icon, CalendarDays, Construction, FileSignature, FileTextIcon, LayoutGrid, UserRoundCheckIcon } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -19,27 +19,32 @@ const mainNavItems: NavItem[] = [
         icon: Construction,
     },
     {
-        title: 'Roles',
-        href: '/roles',
-        icon: UserRoundCheckIcon,
+        title: 'Reports',
+        href: '/reports',
+        icon: BarChart4Icon, // Optional for later
     },
     {
-        title: 'Tasks',
-        href: '/tasks',
-        icon: CheckCheck,
+        title: 'Documents',
+        href: '/documents',
+        icon: FileTextIcon, // Or appropriate icon
+    },
+    {
+        title: 'Scheduling',
+        href: '/scheduling',
+        icon: CalendarDays,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Roles & Access',
+        href: '/roles',
+        icon: UserRoundCheckIcon,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Contract',
+        href: '/contract',
+        icon: FileSignature,
     },
 ];
 

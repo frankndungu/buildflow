@@ -146,7 +146,7 @@ export default function TaskIndex({ project, tasks }: { project: Project; tasks:
                                         className={`min-h-[400px] rounded-lg border-2 p-4 transition-colors ${
                                             snapshot.isDraggingOver ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : statusColors[status]
                                         }`}
-                                    >
+                                     >
                                         <div className="mb-4 flex items-center justify-between">
                                             <h2 className="text-lg font-semibold">{statusLabels[status]}</h2>
                                             <span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium dark:bg-gray-700">
