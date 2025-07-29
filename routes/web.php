@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TaskController; 
+use App\Http\Controllers\ReportController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('roles', RoleController::class);
     Route::resource('projects', ProjectController::class);
+    Route::resource('reports', ReportController::class);
 
     // Project Document routes
     Route::get('/projects/{project}/documents', [DocumentController::class, 'index'])->name('documents.index');
