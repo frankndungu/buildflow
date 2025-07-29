@@ -8,6 +8,7 @@ use App\Http\Controllers\API\ProjectApiController;
 use App\Http\Controllers\API\DocumentApiController;
 use App\Http\Controllers\API\ExpenseApiController;
 use App\Http\Controllers\API\TaskApiController;
+use App\Http\Controllers\API\ReportApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -48,5 +49,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/tasks/{task}', [TaskApiController::class, 'show']);
         Route::put('/tasks/{task}', [TaskApiController::class, 'update']);
         Route::delete('/tasks/{task}', [TaskApiController::class, 'destroy']);
+
+        // Report Routes
+        Route::apiResource('reports', ReportApiController::class);
     });
 });

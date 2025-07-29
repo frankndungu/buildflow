@@ -43,5 +43,9 @@ class Project extends Model
     {
         return $this->hasMany(Task::class)->orderBy('order');
     }
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
 
 }
