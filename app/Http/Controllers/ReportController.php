@@ -71,6 +71,15 @@ class ReportController extends Controller
         return redirect()->route('reports.index')->with('success', 'Report updated successfully.');
     }
 
+    public function show(Report $report)
+    {
+        $report->load('project', 'user');
+
+        return Inertia::render('report/show', [
+            'report' => $report,
+        ]);
+    }
+
     public function destroy(Report $report)
     {
         $report->delete();

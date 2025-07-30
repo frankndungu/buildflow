@@ -49,7 +49,9 @@ export default function Reports() {
                             key={report.id}
                             className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                         >
-                            <div className="text-lg font-semibold">{report.title}</div>
+                            <Link href={`/reports/${report.id}`} className="text-lg font-semibold text-blue-600 hover:underline">
+                                {report.title}
+                            </Link>
                             <div className="text-sm text-muted-foreground capitalize">{report.type}</div>
                             <div className="mt-2 line-clamp-3 text-sm">{report.content}</div>
                             <div className="mt-1 text-xs text-gray-500">
