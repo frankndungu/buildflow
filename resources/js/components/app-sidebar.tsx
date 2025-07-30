@@ -30,7 +30,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Scheduling',
-        href: '/scheduling',
+        href: '/schedules',
         icon: CalendarDays,
     },
 ];

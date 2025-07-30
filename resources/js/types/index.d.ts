@@ -42,6 +42,29 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export type Task = {
+    id: number;
+    title: string;
+    project?: {
+        id: number;
+        name: string;
+    };
+};
+
+export type User = {
+    id: number;
+    name: string;
+};
+
+export type ScheduleFormData = {
+    task_id: string;
+    assigned_to: string | null;
+    scheduled_start: string;
+    scheduled_end: string;
+    status: 'scheduled' | 'in_progress' | 'completed';
+    notes: string;
+};
+
 export type PageProps<T = Record<string, unknown>> = {
     auth: {
         user: {
