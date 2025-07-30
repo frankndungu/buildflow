@@ -9,6 +9,7 @@ use App\Http\Controllers\API\DocumentApiController;
 use App\Http\Controllers\API\ExpenseApiController;
 use App\Http\Controllers\API\TaskApiController;
 use App\Http\Controllers\API\ReportApiController;
+use App\Http\Controllers\API\ScheduleApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -52,5 +53,9 @@ Route::prefix('v1')->group(function () {
 
         // Report Routes
         Route::apiResource('reports', ReportApiController::class);
+
+        // Schedule Routes
+        Route::apiResource('schedules', ScheduleApiController::class);
+        
     });
 });
