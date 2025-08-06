@@ -23,6 +23,15 @@ class DocumentController extends Controller
         ]);
     }
 
+    public function globalIndex()
+    {
+        $documents = Document::with('uploader', 'project')->latest()->get();
+
+        return Inertia::render('document/index', [
+            'documents' => $documents,
+        ]);
+    }
+
     /**
      * Show the form for creating a new document (optional).
      */

@@ -26,6 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('reports', ReportController::class);
     Route::resource('schedules', ScheduleController::class);
 
+    Route::get('/documents', [DocumentController::class, 'globalIndex'])->name('documents.globalIndex');
+
     // Project Document routes
     Route::get('/projects/{project}/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/projects/{project}/documents/create', [DocumentController::class, 'create'])->name('documents.create');
