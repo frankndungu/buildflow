@@ -10,6 +10,7 @@ use App\Http\Controllers\API\ExpenseApiController;
 use App\Http\Controllers\API\TaskApiController;
 use App\Http\Controllers\API\ReportApiController;
 use App\Http\Controllers\API\ScheduleApiController;
+use App\Http\Controllers\API\ContractApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -57,5 +58,8 @@ Route::prefix('v1')->group(function () {
         // Schedule Routes
         Route::apiResource('schedules', ScheduleApiController::class);
         
+        // Contract Routes
+        Route::apiResource('contracts', ContractApiController::class);
+
     });
 });
