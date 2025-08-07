@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TaskController; 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ContractController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -25,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('reports', ReportController::class);
     Route::resource('schedules', ScheduleController::class);
+    Route::resource('contracts', ContractController::class);
 
     Route::get('/documents', [DocumentController::class, 'globalIndex'])->name('documents.globalIndex');
 

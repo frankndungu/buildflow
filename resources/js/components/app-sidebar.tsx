@@ -43,7 +43,7 @@ const footerNavItems: NavItem[] = [
     },
     {
         title: 'Contract',
-        href: '/contract',
+        href: '/contracts',
         icon: FileSignature,
     },
 ];
