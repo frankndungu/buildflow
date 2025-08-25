@@ -1,9 +1,10 @@
 import BudgetChart from '@/components/charts/budget-chart';
 import CategoryChart from '@/components/charts/category-chart';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import type { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { Calendar, DollarSign, Download, Eye, FileText, Plus, TrendingUp, Upload, Users } from 'lucide-react';
+import type { FormEvent } from 'react';
 
 type Project = {
     id: number;
@@ -104,228 +105,405 @@ export default function ShowProject() {
     const totalSpent = project.expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
     const budgetRemaining = project.budget - totalSpent;
 
+    const getStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'active':
+                return 'bg-green-100 text-green-800 border-green-200';
+            case 'completed':
+                return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'on-hold':
+            case 'on_hold': // Handle both underscore and hyphen formats
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800 border-red-200';
+            default:
+                return 'bg-gray-100 text-gray-800 border-gray-200';
+        }
+    };
+
+    const getCategoryIcon = (category: string) => {
+        switch (category.toLowerCase()) {
+            case 'plan':
+                return <FileText className="h-4 w-4" />;
+            case 'contract':
+                return <FileText className="h-4 w-4" />;
+            case 'report':
+                return <TrendingUp className="h-4 w-4" />;
+            case 'photo':
+                return <Eye className="h-4 w-4" />;
+            default:
+                return <FileText className="h-4 w-4" />;
+        }
+    };
+
+    const formatStatus = (status: string) => {
+        return status
+            .replace(/_/g, ' ') // Replace underscores with spaces
+            .replace(/-/g, ' ') // Replace hyphens with spaces
+            .split(' ')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={project.name} />
 
-            <div className="mx-auto max-w-2xl p-6">
-                <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">{project.name}</h1>
-                    <a href={`/projects/${project.id}/edit`} className="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </a>
-                </div>
-
-                {/* Project Info */}
-                <div className="space-y-4 text-sm">
-                    <div>
-                        <span className="font-semibold">Description:</span> {project.description || '—'}
-                    </div>
-                    <div>
-                        <span className="font-semibold">Budget:</span> KES {Number(project.budget).toLocaleString()}
-                    </div>
-                    <div>
-                        <span className="font-semibold">Start Date:</span> {project.start_date || '—'}
-                    </div>
-                    <div>
-                        <span className="font-semibold">End Date:</span> {project.end_date || '—'}
-                    </div>
-                    <div>
-                        <span className="font-semibold">Status:</span> {project.status}
-                    </div>
-                    <div>
-                        <span className="font-semibold">Budget Used:</span> KES {Number(totalSpent).toLocaleString()}
-                    </div>
-                    <div>
-                        <span className="font-semibold">Remaining:</span> KES {Number(budgetRemaining).toLocaleString()}
-                    </div>
-                    {project.creator && (
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {/* Header Section */}
+                <div className="mb-8">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <span className="font-semibold">Created By:</span> {project.creator.name}
+                            <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+                            <p className="mt-2 text-lg text-gray-600">{project.description || 'No description provided'}</p>
                         </div>
-                    )}
+                        <div className="flex gap-3">
+                            <span
+                                className={`inline-flex items-center rounded-full border px-4 py-2 text-base font-semibold ${getStatusColor(project.status)}`}
+                            >
+                                {formatStatus(project.status)}
+                            </span>
+                            <a
+                                href={`/projects/${project.id}/edit`}
+                                className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+                            >
+                                Edit Project
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Assigned Users */}
-                {project.users && project.users.length > 0 && (
-                    <div className="mt-8 space-y-2">
-                        <h2 className="text-lg font-semibold">Assigned Team</h2>
-                        <ul className="space-y-1 text-sm">
-                            {project.users.map((user) => (
-                                <li key={user.id} className="flex justify-between border-b py-2">
+                {/* Stats Cards */}
+                <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <DollarSign className="h-8 w-8 text-green-600" />
+                            </div>
+                            <div className="ml-4">
+                                <p className="text-sm font-medium text-gray-600">Total Budget</p>
+                                <p className="text-2xl font-bold text-gray-900">KES {Number(project.budget).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <TrendingUp className="h-8 w-8 text-red-600" />
+                            </div>
+                            <div className="ml-4">
+                                <p className="text-sm font-medium text-gray-600">Spent</p>
+                                <p className="text-2xl font-bold text-gray-900">KES {Number(totalSpent).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <DollarSign className="h-8 w-8 text-blue-600" />
+                            </div>
+                            <div className="ml-4">
+                                <p className="text-sm font-medium text-gray-600">Remaining</p>
+                                <p className="text-2xl font-bold text-gray-900">KES {Number(budgetRemaining).toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <Users className="h-8 w-8 text-purple-600" />
+                            </div>
+                            <div className="ml-4">
+                                <p className="text-sm font-medium text-gray-600">Team Members</p>
+                                <p className="text-2xl font-bold text-gray-900">{project.users?.length || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-8 xl:grid-cols-4">
+                    {/* Main Content */}
+                    <div className="space-y-8 xl:col-span-3">
+                        {/* Project Details */}
+                        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                            <h2 className="mb-6 text-xl font-semibold text-gray-900">Project Details</h2>
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <div className="flex items-center space-x-3">
+                                    <Calendar className="h-5 w-5 text-gray-400" />
                                     <div>
-                                        <span className="font-medium">{user.name}</span> ({user.email})
+                                        <p className="text-sm font-medium text-gray-600">Start Date</p>
+                                        <p className="text-sm text-gray-900">{project.start_date || 'Not set'}</p>
                                     </div>
-                                    <div className="text-gray-500 capitalize">{user.pivot.role}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-                {/* Tasks Section */}
-                <a href={`/projects/${project.id}/tasks`} className="text-sm text-blue-600 hover:underline">
-                    View Tasks
-                </a>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <Calendar className="h-5 w-5 text-gray-400" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">End Date</p>
+                                        <p className="text-sm text-gray-900">{project.end_date || 'Not set'}</p>
+                                    </div>
+                                </div>
+                                {project.creator && (
+                                    <div className="flex items-center space-x-3">
+                                        <Users className="h-5 w-5 text-gray-400" />
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600">Created By</p>
+                                            <p className="text-sm text-gray-900">{project.creator.name}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex items-center space-x-3">
+                                    <FileText className="h-5 w-5 text-gray-400" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600">Tasks</p>
+                                        <a href={`/projects/${project.id}/tasks`} className="text-sm text-blue-600 hover:text-blue-800">
+                                            View Tasks →
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Documents */}
-                {project.documents && project.documents.length > 0 && (
-                    <div className="mt-10 space-y-2">
-                        <h2 className="text-lg font-semibold">Project Documents</h2>
-                        <ul className="space-y-3">
-                            {project.documents.map((doc) => (
-                                <li key={doc.id} className="rounded border p-3 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="font-semibold">{doc.name}</span>
-                                        <span className="text-xs text-muted-foreground capitalize">{doc.category}</span>
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                        Uploaded by: {doc.uploader?.name || '—'}
-                                        {doc.version && <> | Version: {doc.version}</>}
-                                    </div>
-                                    <a
-                                        href={`/storage/${doc.file_path}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-blue-600 hover:underline"
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                            <div className="rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+                                <h3 className="mb-6 text-xl font-semibold text-gray-900">Budget Usage</h3>
+                                <div className="h-80">
+                                    <BudgetChart used={totalSpent} total={project.budget} />
+                                </div>
+                            </div>
+                            <div className="rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+                                <h3 className="mb-6 text-xl font-semibold text-gray-900">Expense Categories</h3>
+                                <div className="h-80">
+                                    <CategoryChart expenses={project.expenses || []} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Documents Section */}
+                        {project.documents && project.documents.length > 0 && (
+                            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                                <h2 className="mb-6 text-xl font-semibold text-gray-900">Project Documents</h2>
+                                <div className="space-y-4">
+                                    {project.documents.map((doc) => (
+                                        <div
+                                            key={doc.id}
+                                            className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+                                        >
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex-shrink-0 text-gray-400">{getCategoryIcon(doc.category)}</div>
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{doc.name}</p>
+                                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                                        <span className="capitalize">{doc.category}</span>
+                                                        {doc.version && <span>v{doc.version}</span>}
+                                                        <span>by {doc.uploader?.name || 'Unknown'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={`/storage/${doc.file_path}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                                <span>Download</span>
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Expenses Section */}
+                        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                            <h2 className="mb-6 text-xl font-semibold text-gray-900">Recent Expenses</h2>
+                            <div className="space-y-4">
+                                {project.expenses?.map((exp) => (
+                                    <div
+                                        key={exp.id}
+                                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
                                     >
-                                        View File
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-medium text-gray-900">{exp.description}</p>
+                                                <p className="text-lg font-semibold text-gray-900">KES {Number(exp.amount).toLocaleString()}</p>
+                                            </div>
+                                            <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                                                <span className="capitalize">{exp.category}</span>
+                                                <span>{exp.spent_at}</span>
+                                                <span>by {exp.uploader?.name}</span>
+                                            </div>
+                                        </div>
+                                        <a
+                                            href={`/storage/${exp.receipt_path}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-4 inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            <span>Receipt</span>
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                )}
-                {/* Charts Section */}
-                <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div>
-                        <h3 className="mb-2 text-sm font-semibold">Budget Usage</h3>
-                        <BudgetChart used={totalSpent} total={project.budget} />
-                    </div>
-                    <div>
-                        <h3 className="mb-2 text-sm font-semibold">Expense Categories</h3>
-                        <CategoryChart expenses={project.expenses || []} />
-                    </div>
-                </div>
 
-                {/* Upload Document */}
-                <div className="mt-10 rounded border p-4">
-                    <h3 className="mb-3 text-sm font-semibold">Upload New Document</h3>
-                    <form onSubmit={handleDocSubmit} className="space-y-3">
-                        <input
-                            type="text"
-                            placeholder="Document Name"
-                            value={docForm.data.name}
-                            onChange={(e) => docForm.setData('name', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        />
-                        <select
-                            value={docForm.data.category}
-                            onChange={(e) => docForm.setData('category', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        >
-                            <option value="plan">Plan</option>
-                            <option value="contract">Contract</option>
-                            <option value="report">Report</option>
-                            <option value="photo">Photo</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <input
-                            type="text"
-                            placeholder="Version (optional)"
-                            value={docForm.data.version}
-                            onChange={(e) => docForm.setData('version', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        />
-                        <input
-                            type="file"
-                            accept="application/pdf,image/*"
-                            onChange={(e) => docForm.setData('file', e.target.files?.[0] || null)}
-                            className="w-full rounded border text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white"
-                        />
-                        <button
-                            type="submit"
-                            disabled={docForm.processing}
-                            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {docForm.processing ? 'Uploading…' : 'Upload Document'}
-                        </button>
-                    </form>
-                </div>
+                    {/* Sidebar */}
+                    <div className="space-y-6 xl:col-span-1">
+                        {/* Team Members */}
+                        {project.users && project.users.length > 0 && (
+                            <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
+                                <h2 className="mb-4 text-lg font-semibold text-gray-900">Team Members</h2>
+                                <div className="space-y-3">
+                                    {project.users.map((user) => (
+                                        <div key={user.id} className="flex items-center space-x-3">
+                                            <div className="flex-shrink-0">
+                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+                                                    <span className="text-xs font-medium text-gray-600">{user.name.charAt(0).toUpperCase()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+                                                <p className="truncate text-xs text-gray-500">{user.email}</p>
+                                            </div>
+                                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 capitalize">
+                                                {user.pivot.role}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                {/* Expenses */}
-                <div className="mt-12 space-y-4">
-                    <h2 className="text-lg font-semibold">Expenses</h2>
-                    <ul className="space-y-3 text-sm">
-                        {project.expenses?.map((exp) => (
-                            <li key={exp.id} className="rounded border p-3">
-                                <div className="flex justify-between font-medium">
-                                    <span>{exp.description}</span>
-                                    <span>KES {Number(exp.amount).toLocaleString()}</span>
+                        {/* Upload Document Form */}
+                        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
+                            <h3 className="mb-4 text-lg font-semibold text-gray-900">Upload Document</h3>
+                            <form onSubmit={handleDocSubmit} className="space-y-3">
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Document Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter document name"
+                                        value={docForm.data.name}
+                                        onChange={(e) => docForm.setData('name', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    />
                                 </div>
-                                <div className="text-xs text-gray-500">
-                                    Category: {exp.category} | Spent: {exp.spent_at} | Uploaded by: {exp.uploader?.name}
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
+                                    <select
+                                        value={docForm.data.category}
+                                        onChange={(e) => docForm.setData('category', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    >
+                                        <option value="plan">Plan</option>
+                                        <option value="contract">Contract</option>
+                                        <option value="report">Report</option>
+                                        <option value="photo">Photo</option>
+                                        <option value="other">Other</option>
+                                    </select>
                                 </div>
-                                <a
-                                    href={`/storage/${exp.receipt_path}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 hover:underline"
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Version (Optional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., 1.0, v2.1"
+                                        value={docForm.data.version}
+                                        onChange={(e) => docForm.setData('version', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">File</label>
+                                    <input
+                                        type="file"
+                                        accept="application/pdf,image/*"
+                                        onChange={(e) => docForm.setData('file', e.target.files?.[0] || null)}
+                                        className="w-full rounded-lg border border-gray-300 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 file:hover:bg-blue-100"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={docForm.processing}
+                                    className="inline-flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    View Receipt
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                                    <Upload className="h-4 w-4" />
+                                    <span>{docForm.processing ? 'Uploading...' : 'Upload Document'}</span>
+                                </button>
+                            </form>
+                        </div>
 
-                {/* Add Expense Form */}
-                <div className="mt-10 rounded border p-4">
-                    <h3 className="mb-3 text-sm font-semibold">Log New Expense</h3>
-                    <form onSubmit={handleExpenseSubmit} className="space-y-3">
-                        <input
-                            type="text"
-                            placeholder="Description"
-                            value={expenseForm.data.description}
-                            onChange={(e) => expenseForm.setData('description', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        />
-                        <input
-                            type="number"
-                            placeholder="Amount (KES)"
-                            value={expenseForm.data.amount}
-                            onChange={(e) => expenseForm.setData('amount', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        />
-                        <select
-                            value={expenseForm.data.category}
-                            onChange={(e) => expenseForm.setData('category', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        >
-                            <option value="material">Material</option>
-                            <option value="labor">Labor</option>
-                            <option value="logistics">Logistics</option>
-                            <option value="misc">Misc</option>
-                        </select>
-                        <input
-                            type="date"
-                            value={expenseForm.data.spent_at}
-                            onChange={(e) => expenseForm.setData('spent_at', e.target.value)}
-                            className="w-full rounded border px-3 py-2 text-sm"
-                        />
-                        <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            onChange={(e) => expenseForm.setData('receipt', e.target.files?.[0] || null)}
-                            className="w-full rounded border text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white"
-                        />
-                        <button
-                            type="submit"
-                            disabled={expenseForm.processing}
-                            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {expenseForm.processing ? 'Submitting…' : 'Add Expense'}
-                        </button>
-                    </form>
+                        {/* Add Expense Form */}
+                        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
+                            <h3 className="mb-4 text-lg font-semibold text-gray-900">Log Expense</h3>
+                            <form onSubmit={handleExpenseSubmit} className="space-y-3">
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+                                    <input
+                                        type="text"
+                                        placeholder="What was this expense for?"
+                                        value={expenseForm.data.description}
+                                        onChange={(e) => expenseForm.setData('description', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Amount (KES)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={expenseForm.data.amount}
+                                        onChange={(e) => expenseForm.setData('amount', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
+                                    <select
+                                        value={expenseForm.data.category}
+                                        onChange={(e) => expenseForm.setData('category', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    >
+                                        <option value="material">Material</option>
+                                        <option value="labor">Labor</option>
+                                        <option value="logistics">Logistics</option>
+                                        <option value="misc">Miscellaneous</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Date Spent</label>
+                                    <input
+                                        type="date"
+                                        value={expenseForm.data.spent_at}
+                                        onChange={(e) => expenseForm.setData('spent_at', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-gray-700">Receipt</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        onChange={(e) => expenseForm.setData('receipt', e.target.files?.[0] || null)}
+                                        className="w-full rounded-lg border border-gray-300 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-green-50 file:px-4 file:py-2 file:text-green-700 file:hover:bg-green-100"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={expenseForm.processing}
+                                    className="inline-flex w-full items-center justify-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    <span>{expenseForm.processing ? 'Adding...' : 'Add Expense'}</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </AppLayout>

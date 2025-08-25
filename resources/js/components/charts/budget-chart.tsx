@@ -25,7 +25,7 @@ export default function BudgetChart({ used, total }: { used: number; total: numb
     // Enterprise color scheme matching dashboard
     const COLORS = {
         used: '#3b82f6', // Blue-500 (matches dashboard primary)
-        remaining: '#e5e7eb', // Gray-200 (neutral background)
+        remaining: '#38a169', // Green-600 (matches dashboard success)
     };
 
     const CustomTooltip = ({ active, payload }: any) => {

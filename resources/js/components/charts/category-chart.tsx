@@ -1,132 +1,97 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-type Expense = {
+type DetailedExpense = {
+    id: number;
+    description: string;
+    amount: number;
+    category: string;
+    spent_at: string;
+    receipt_path: string;
+    uploader?: {
+        name: string;
+    };
+};
+
+type SimpleCategoryExpense = {
     category: string;
     amount: number;
 };
 
-type CustomTooltipProps = {
-    active?: boolean;
-    payload?: Array<{
-        name: string;
-        value: number;
-    }>;
+type CategoryChartProps = {
+    expenses: DetailedExpense[] | SimpleCategoryExpense[];
 };
 
-export default function CategoryChart({ expenses }: { expenses: Expense[] }) {
-    const grouped = expenses.reduce<Record<string, number>>((acc, exp) => {
-        acc[exp.category] = (acc[exp.category] || 0) + Number(exp.amount);
-        return acc;
-    }, {});
+export default function CategoryChart({ expenses }: CategoryChartProps) {
+    const categoryTotals = expenses.reduce(
+        (acc, expense) => {
+            const category = expense.category;
+            acc[category] = (acc[category] || 0) + Number(expense.amount);
+            return acc;
+        },
+        {} as Record<string, number>,
+    );
 
-    const data = Object.entries(grouped).map(([category, total]) => ({
+    const totalAmount = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0);
+
+    const data = Object.entries(categoryTotals).map(([category, amount]) => ({
         name: category,
-        value: total,
+        value: amount,
+        percentage: ((amount / totalAmount) * 100).toFixed(1),
+        displayValue: `KES ${amount.toLocaleString()}`,
     }));
 
-    // Enhanced color palette with gradients
-    const COLORS = [
-        '#6366F1', // Indigo
-        '#06B6D4', // Cyan
-        '#10B981', // Emerald
-        '#8B5CF6', // Violet
-        '#EC4899', // Pink
-        '#F59E0B', // Amber
-        '#EF4444', // Red
-        '#84CC16', // Lime
-    ];
+    // Professional color scheme matching the budget chart
+    const COLORS = {
+        material: '#3b82f6', // Blue-500
+        labor: '#10b981', // Emerald-500
+        logistics: '#f59e0b', // Amber-500
+        misc: '#8b5cf6', // Violet-500
+    };
 
-    const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+    const getColor = (category: string) => {
+        return COLORS[category.toLowerCase() as keyof typeof COLORS] || '#6b7280'; // Gray-500 fallback
+    };
+
+    const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
-            const total = data.reduce((a, b) => a + b.value, 0);
-            const percentage = ((payload[0].value / total) * 100).toFixed(1);
-
+            const data = payload[0].payload;
             return (
-                <div className="rounded-xl border border-gray-200/50 bg-white/95 p-4 shadow-2xl backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/95">
-                    <p className="font-bold text-gray-900 dark:text-white">{payload[0].name}</p>
-                    <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">KES {payload[0].value.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{percentage}% of total expenses</p>
+                <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-600 dark:bg-gray-800">
+                    <div className="flex items-center space-x-2">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: payload[0].color }} />
+                        <span className="font-medium text-gray-900 capitalize dark:text-white">{data.name}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        {data.displayValue} ({data.percentage}%)
+                    </div>
                 </div>
             );
         }
         return null;
     };
 
-    if (!data.length) {
+    if (data.length === 0) {
         return (
-            <div className="flex h-[300px] items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center">
                 <div className="text-center">
-                    <div className="text-6xl">📊</div>
-                    <p className="mt-2 text-gray-500 dark:text-gray-400">No expense data available</p>
+                    <div className="text-2xl font-bold text-gray-400">No Data</div>
+                    <div className="text-sm text-gray-500">No expenses recorded yet</div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full">
-            <div className="mb-6">
-                <ResponsiveContainer width="100%" height={300}>
+        <div className="flex h-full w-full flex-col space-y-4">
+            {/* Chart Container */}
+            <div className="relative min-h-[200px] flex-1">
+                <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                        <Pie
-                            data={data}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={120}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={(props) => {
-                                const { cx, cy, midAngle, innerRadius, outerRadius, value, name } = props;
-
-                                // Check for undefined values and skip label if any are missing
-                                if (
-                                    cx === undefined ||
-                                    cy === undefined ||
-                                    midAngle === undefined ||
-                                    innerRadius === undefined ||
-                                    outerRadius === undefined ||
-                                    value === undefined ||
-                                    name === undefined
-                                ) {
-                                    return null;
-                                }
-
-                                const RADIAN = Math.PI / 180;
-                                const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
-                                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-                                const total = data.reduce((a, b) => a + b.value, 0);
-                                const percentage = ((value / total) * 100).toFixed(0);
-
-                                // Only show label if percentage is > 5% to avoid clutter
-                                if (parseFloat(percentage) < 5) return null;
-
-                                return (
-                                    <text
-                                        x={x}
-                                        y={y}
-                                        className="fill-gray-700 text-xs font-semibold dark:fill-gray-300"
-                                        textAnchor={x > cx ? 'start' : 'end'}
-                                        dominantBaseline="central"
-                                    >
-                                        {`${percentage}%`}
-                                    </text>
-                                );
-                            }}
-                        >
+                        <Pie data={data} cx="50%" cy="50%" innerRadius={45} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
                             {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={COLORS[index % COLORS.length]}
-                                    className="transition-all duration-300 hover:scale-105 hover:opacity-80"
-                                    stroke={COLORS[index % COLORS.length]}
-                                    strokeWidth={2}
-                                />
+                                <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
@@ -134,51 +99,33 @@ export default function CategoryChart({ expenses }: { expenses: Expense[] }) {
                 </ResponsiveContainer>
             </div>
 
-            {/* Legend */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {data.map((entry, index) => {
-                    const total = data.reduce((a, b) => a + b.value, 0);
-                    const percentage = ((entry.value / total) * 100).toFixed(1);
-
-                    return (
-                        <motion.div
-                            key={entry.name}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                            className="flex items-center justify-between rounded-lg bg-gray-50/50 p-3 backdrop-blur-sm transition-all duration-200 hover:bg-gray-100/50 dark:bg-gray-700/30 dark:hover:bg-gray-600/30"
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div className="h-4 w-4 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                                <span className="font-medium text-gray-700 dark:text-gray-300">{entry.name}</span>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm font-bold text-gray-900 dark:text-white">{percentage}%</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">KES {entry.value.toLocaleString()}</div>
-                            </div>
-                        </motion.div>
-                    );
-                })}
+            {/* Custom Legend */}
+            <div className="flex flex-wrap justify-center gap-4">
+                {data.map((entry, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: getColor(entry.name) }} />
+                        <span className="text-sm font-medium text-gray-700 capitalize dark:text-gray-300">{entry.name}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">({entry.percentage}%)</span>
+                    </div>
+                ))}
             </div>
 
-            {/* Summary Stats */}
-            <div className="mt-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Categories</div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{data.length}</div>
+            {/* Summary Statistics */}
+            <div className="rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-700/50">
+                <div className="flex items-center justify-between text-sm">
+                    <div className="text-center">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100">{data.length}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Categories</div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Amount</div>
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            KES {data.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
-                        </div>
+                    <div className="text-center">
+                        <div className="font-semibold text-blue-600 dark:text-blue-400">KES {(totalAmount / 1000000).toFixed(1)}M</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg per Category</div>
-                        <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                            KES {Math.round(data.reduce((sum, item) => sum + item.value, 0) / data.length).toLocaleString()}
+                    <div className="text-center">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100">
+                            KES {(Math.round(totalAmount / data.length) / 1000000).toFixed(1)}M
                         </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Avg/Category</div>
                     </div>
                 </div>
             </div>

@@ -182,7 +182,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Analytics Section */}
+                    {/* Analytics Section - DEBUG VERSION */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -201,7 +201,7 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                {/* Expense summary - Fixed formatting */}
+                                {/* Expense summary */}
                                 <div className="grid grid-cols-2 gap-6 lg:flex lg:gap-8">
                                     <div className="text-center lg:text-right">
                                         <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Expenses</div>
@@ -219,10 +219,32 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
-                            {/* CategoryChart Container */}
-                            <div className="rounded-xl bg-gradient-to-br from-gray-50/50 to-white p-6 dark:from-gray-800/30 dark:to-gray-700/30">
-                                <CategoryChart expenses={projectStats.expenses} />
-                            </div>
+                            {/* Then try with real data */}
+                            {projectStats.expenses && projectStats.expenses.length > 0 && (
+                                <div className="mt-6 rounded-xl bg-gradient-to-br from-gray-50/50 to-white p-6 dark:from-gray-800/30 dark:to-gray-700/30">
+                                    <div className="h-80 rounded-lg border border-gray-200 p-4">
+                                        <CategoryChart expenses={projectStats.expenses} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Show if no data */}
+                            {(!projectStats.expenses || projectStats.expenses.length === 0) && (
+                                <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+                                    <div className="text-center">
+                                        <PieChart className="mx-auto h-12 w-12 text-gray-400" />
+                                        <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No expense data found</h3>
+                                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                            projectStats.expenses is{' '}
+                                            {projectStats.expenses === null
+                                                ? 'null'
+                                                : projectStats.expenses === undefined
+                                                  ? 'undefined'
+                                                  : 'empty array'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
 
