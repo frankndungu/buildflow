@@ -1,6 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { AlertCircle, BarChart3, Calendar, FileText, Plus } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
 type Project = {
@@ -21,117 +23,239 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function CreateReport() {
     const { projects } = usePage<PageProps>().props;
 
-    const [projectId, setProjectId] = useState<number | null>(null);
-    const [title, setTitle] = useState('');
-    const [type, setType] = useState<'progress' | 'financial' | 'task' | 'custom'>('progress');
-    const [content, setContent] = useState('');
-    const [reportDate, setReportDate] = useState('');
+    const [form, setForm] = useState({
+        project_id: '',
+        title: '',
+        type: 'progress' as 'progress' | 'financial' | 'task' | 'custom',
+        content: '',
+        report_date: '',
+    });
+
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        setErrors({});
 
-        router.post(
-            '/reports',
-            {
-                project_id: projectId,
-                title,
-                type,
-                content,
-                report_date: reportDate,
+        router.post('/reports', form, {
+            onError: (err) => setErrors(err),
+            onSuccess: () => {
+                setForm({
+                    project_id: '',
+                    title: '',
+                    type: 'progress',
+                    content: '',
+                    report_date: '',
+                });
+                router.visit('/reports');
             },
-            {
-                onError: (err) => setErrors(err),
-                onSuccess: () => {
-                    router.visit('/reports');
-                },
-            },
-        );
+        });
     };
+
+    const reportTypeOptions = [
+        { value: 'progress', label: 'Progress Report', description: 'Track project milestones and completion status' },
+        { value: 'financial', label: 'Financial Report', description: 'Budget tracking and expense analysis' },
+        { value: 'task', label: 'Task Report', description: 'Detailed task completion and assignments' },
+        { value: 'custom', label: 'Custom Report', description: 'Create a customized report format' },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Report" />
 
-            <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-                <h1 className="text-2xl font-bold">Create Report</h1>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+                    {/* Header */}
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Create New Report</h1>
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Generate comprehensive reports for your projects</p>
+                            </div>
+                        </div>
+                    </motion.div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Project</label>
-                        <select
-                            value={projectId ?? ''}
-                            onChange={(e) => setProjectId(Number(e.target.value))}
-                            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="">Select a project</option>
-                            {projects.map((project) => (
-                                <option key={project.id} value={project.id}>
-                                    {project.name}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.project_id && <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>}
-                    </div>
+                    {/* Form */}
+                    <motion.form
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        onSubmit={handleSubmit}
+                        className="space-y-8"
+                    >
+                        {/* Basic Info Section */}
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div className="mb-6 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-gray-400" />
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h2>
+                            </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            placeholder="e.g., Weekly Summary"
-                        />
-                        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
-                    </div>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Project</label>
+                                    <select
+                                        name="project_id"
+                                        value={form.project_id}
+                                        onChange={handleChange}
+                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        required
+                                    >
+                                        <option value="">Select a project</option>
+                                        {projects.map((project) => (
+                                            <option key={project.id} value={project.id}>
+                                                {project.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.project_id && (
+                                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
+                                            <AlertCircle className="h-4 w-4" />
+                                            {errors.project_id}
+                                        </div>
+                                    )}
+                                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value as any)}
-                            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="progress">Progress</option>
-                            <option value="financial">Financial</option>
-                            <option value="task">Task</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                        {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type}</p>}
-                    </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Report Title</label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={form.title}
+                                        onChange={handleChange}
+                                        className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        placeholder="Enter report title (e.g., Weekly Summary)"
+                                        required
+                                    />
+                                    {errors.title && (
+                                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
+                                            <AlertCircle className="h-4 w-4" />
+                                            {errors.title}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
-                        <textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            rows={4}
-                        />
-                        {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content}</p>}
-                    </div>
+                        {/* Report Configuration Section */}
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div className="mb-6 flex items-center gap-2">
+                                <BarChart3 className="h-5 w-5 text-gray-400" />
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Report Configuration</h2>
+                            </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Report Date</label>
-                        <input
-                            type="date"
-                            value={reportDate}
-                            onChange={(e) => setReportDate(e.target.value)}
-                            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        />
-                        {errors.report_date && <p className="mt-1 text-sm text-red-600">{errors.report_date}</p>}
-                    </div>
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Report Type</label>
+                                    <div className="mt-3 space-y-3">
+                                        {reportTypeOptions.map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
+                                                    form.type === option.value
+                                                        ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
+                                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="type"
+                                                    value={option.value}
+                                                    checked={form.type === option.value}
+                                                    onChange={handleChange}
+                                                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                                />
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-white">{option.label}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{option.description}</div>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {errors.type && (
+                                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
+                                            <AlertCircle className="h-4 w-4" />
+                                            {errors.type}
+                                        </div>
+                                    )}
+                                </div>
 
-                    <div className="flex justify-between">
-                        <Link href="/reports" className="text-sm text-blue-600 hover:underline">
-                            Cancel
-                        </Link>
-                        <button type="submit" className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700">
-                            Create Report
-                        </button>
-                    </div>
-                </form>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Report Date</label>
+                                    <div className="relative mt-1">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <Calendar className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="date"
+                                            name="report_date"
+                                            value={form.report_date}
+                                            onChange={handleChange}
+                                            className="block w-full rounded-lg border border-gray-300 py-2.5 pr-4 pl-10 text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                            required
+                                        />
+                                    </div>
+                                    {errors.report_date && (
+                                        <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
+                                            <AlertCircle className="h-4 w-4" />
+                                            {errors.report_date}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content Section */}
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div className="mb-6 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-gray-400" />
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Report Content</h2>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
+                                <textarea
+                                    name="content"
+                                    value={form.content}
+                                    onChange={handleChange}
+                                    rows={8}
+                                    className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                    placeholder="Enter your report content here. Include key findings, progress updates, metrics, and any relevant observations..."
+                                    required
+                                />
+                                {errors.content && (
+                                    <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
+                                        <AlertCircle className="h-4 w-4" />
+                                        {errors.content}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="flex items-center justify-end gap-4">
+                            <Link
+                                href="/reports"
+                                className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                Cancel
+                            </Link>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-500 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-900"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Create Report
+                            </motion.button>
+                        </div>
+                    </motion.form>
+                </div>
             </div>
         </AppLayout>
     );
