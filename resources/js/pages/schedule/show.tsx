@@ -1,6 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { AlertCircle, Calendar, CheckCircle2, Clock, Edit2, FileText, Folder, User2 } from 'lucide-react';
 
 type Schedule = {
     id: number;
@@ -30,45 +32,135 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ScheduleShow() {
     const { schedule } = usePage().props as unknown as { schedule: Schedule };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'completed':
+                return 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400';
+            case 'in_progress':
+                return 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400';
+            default:
+                return 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-500/10 dark:text-gray-400';
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Schedule #${schedule.id}`} />
 
-            <div className="max-w-3xl space-y-6 p-6">
-                <h1 className="text-2xl font-bold">Schedule Details</h1>
-
-                <div className="space-y-4 rounded border bg-white p-4 shadow">
-                    <div>
-                        <strong>Task:</strong> {schedule.task?.title} ({schedule.task?.project?.name})
-                    </div>
-
-                    <div>
-                        <strong>Assigned To:</strong> {schedule.assignee?.name ?? 'Unassigned'}
-                    </div>
-
-                    <div>
-                        <strong>Scheduled Start:</strong> {schedule.scheduled_start}
-                    </div>
-
-                    <div>
-                        <strong>Scheduled End:</strong> {schedule.scheduled_end}
-                    </div>
-
-                    <div>
-                        <strong>Status:</strong> <span className="capitalize">{schedule.status.replace('_', ' ')}</span>
-                    </div>
-
-                    {schedule.notes && (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                    {/* Header Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
                         <div>
-                            <strong>Notes:</strong>
-                            <p className="whitespace-pre-wrap text-gray-700">{schedule.notes}</p>
+                            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Schedule Details</h1>
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">View and manage schedule information</p>
                         </div>
-                    )}
-                </div>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => router.visit(`/schedules/${schedule.id}/edit`)}
+                            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500"
+                        >
+                            <Edit2 className="h-4 w-4" />
+                            Edit Schedule
+                        </motion.button>
+                    </motion.div>
 
-                <a href={`/schedules/${schedule.id}/edit`} className="inline-block rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                    Edit Schedule
-                </a>
+                    {/* Schedule Details Card */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
+                        {/* Status Banner */}
+                        <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
+                            <span
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${getStatusColor(schedule.status)}`}
+                            >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                {schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1).replace('_', ' ')}
+                            </span>
+                        </div>
+
+                        {/* Main Content */}
+                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {/* Task Information */}
+                            <div className="p-6">
+                                <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                                    <FileText className="h-5 w-5" />
+                                    Task Details
+                                </div>
+                                <div className="mt-4 space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <Folder className="mt-1 h-5 w-5 text-gray-400" />
+                                        <div>
+                                            <div className="font-medium text-gray-900 dark:text-white">{schedule.task?.title}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">{schedule.task?.project?.name}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Schedule Information */}
+                            <div className="grid gap-6 p-6 sm:grid-cols-2">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-5 w-5 text-gray-400" />
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Start Time</span>
+                                    </div>
+                                    <div className="mt-2 text-gray-900 dark:text-white">{new Date(schedule.scheduled_start).toLocaleString()}</div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-5 w-5 text-gray-400" />
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">End Time</span>
+                                    </div>
+                                    <div className="mt-2 text-gray-900 dark:text-white">{new Date(schedule.scheduled_end).toLocaleString()}</div>
+                                </div>
+                            </div>
+
+                            {/* Assignee Information */}
+                            <div className="p-6">
+                                <div className="flex items-center gap-2">
+                                    <User2 className="h-5 w-5 text-gray-400" />
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Assigned To</span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-3">
+                                    {schedule.assignee ? (
+                                        <>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                    {schedule.assignee.name.charAt(0).toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="text-gray-900 dark:text-white">{schedule.assignee.name}</div>
+                                        </>
+                                    ) : (
+                                        <div className="text-gray-500 dark:text-gray-400">Unassigned</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Notes Section */}
+                            {schedule.notes && (
+                                <div className="p-6">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="h-5 w-5 text-gray-400" />
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Notes</span>
+                                    </div>
+                                    <div className="mt-2 rounded-lg bg-gray-50 p-4 whitespace-pre-wrap text-gray-700 dark:bg-gray-700/50 dark:text-gray-300">
+                                        {schedule.notes}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
             </div>
         </AppLayout>
     );
